@@ -1,0 +1,463 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+
+using namespace std;
+
+class EmployeeBase;						
+
+class UserProject						
+{
+private:
+	string project_name,				// имя проекта
+		   project_description;			// описание
+	string project_creator[2];			// параметры 
+	friend EmployeeBase;				
+	
+
+public:
+
+	UserProject()						
+	{
+		project_name = "NULL";
+		project_description = "NULL";
+		project_creator[0] = "NULL";
+		project_creator[1] = "NULL";
+	}
+
+
+	void createProject(string const *n, string const *d)
+        // метод создания проекта
+	{
+		system("cls");
+		cout << "Название проекта:";	getline(cin, project_name, '\n');
+		cout << "Опишите проект:";	getline(cin, project_description, '\n');
+		project_creator[0] = *n;//
+		project_creator[1] = *d;//
+		system("pause");
+		system("cls");
+	}
+	void createProject(ifstream *f, string const *n, string const *d) 
+        // метод создания проекта, чтения файлов
+	{
+		getline(*f, project_name, '\n');
+		getline(*f, project_description, '\n');
+		project_creator[0] = *n;//
+		project_creator[1] = *d;//
+	}
+
+	void getProjectList(int const *number)						
+        // вывод информации по проктам 
+	{
+		cout << "Информация проекте №" << *number + 1 << endl;
+		cout << "Кто создал проект: " << project_creator[0] << endl << "Департамент: " << project_creator[1] << endl;
+		cout << "Название проекта: " << project_name << endl;
+		cout << "Описание проекта: " << project_description << endl;
+		cout << "__________________________________________________________" << endl; 
+	}
+};
+
+class Employee						
+// класс сотрудника
+{
+private:
+	int pr_len = 0;					
+	string login,					
+		password;
+
+	void firstProject()											
+        // создание проекта
+	{
+		project_list[0].createProject(&name, &section);	
+                // вызов метода создания проекта
+		pr_len++;												
+	}
+
+	void firstProject(ifstream *f)								
+	{
+		project_list[0].createProject(f, &name, &section);	
+		
+	}
+
+	void newProject()											
+        // добавление проекта в базу когда < 1 	
+	{
+		UserProject t_project;													
+		t_project.createProject(&name, &section);							
+		UserProject *temp_project_list;											
+		temp_project_list = new UserProject[pr_len + 1];						
+		for (int i = 0; i < pr_len; i++) temp_project_list[i] = project_list[i];
+		temp_project_list[pr_len] = t_project;									
+		pr_len++;	
+		delete[] project_list;													
+		project_list = temp_project_list;										
+	}
+	void newProject(ifstream *f)									   
+        // созданe списка проектов, когда проектов > 1
+	{
+		UserProject *temp_project_list = new UserProject[pr_len];	   
+                // создается список объектов равный кол-ву проектов 
+
+		
+		for (int i = 0; i < pr_len; i++)
+			temp_project_list[i].createProject(f, &name, &section); 
+                //внесение необходимого количества проектов в список
+
+		delete[] project_list;											
+                // удаление списка проектов
+		project_list = temp_project_list;								
+                // ссылка на новый список проектов
+	}
+
+	void removeProjectList(int const *number)				
+        // удаления любого номера проекта из списка
+	{
+		UserProject *temp_project_list;						
+                // созданеие списка объектов
+		int k = 0;											
+		if (pr_len - 1 == 0)								
+		{
+			
+			delete[] project_list;
+			project_list = new UserProject[1];
+		}
+		else
+		{
+			// в случае удаления не последнего проекта:
+			temp_project_list = new UserProject[pr_len - 1];									
+			for (int i = 0; i < (*number - 1); i++) temp_project_list[k++] = project_list[i];	
+			for (int i = *number; i < pr_len; i++) temp_project_list[k++] = project_list[i];	
+			delete[] project_list;																
+			project_list = temp_project_list;													
+		}
+
+	}
+
+	friend EmployeeBase;								
+
+public: 
+	UserProject *project_list;							
+	string name,										
+        // имя сотрудника
+		   section;									
+                   // отдел, в котором сотрудник работает
+
+	Employee()										
+	{
+		login = "Поле не задано";
+		password = "Поле не задано";
+		name = "Поле не задано";
+		section = "Поле не задано";
+		if (pr_len == 0)
+			project_list = new UserProject[1];		
+		else
+			project_list = new UserProject[pr_len];	
+	}
+
+	void setInf()									
+        // параметры сотрудника
+	{
+		system("cls");
+		cout << "Внесите информацию о сотруднике:" << endl;
+		cout << "Имя:";		getline(cin, name, '\n');
+		cout << "Отдел:";	getline(cin, section, '\n');
+		cout << "Логин:";	getline(cin, login, '\n');
+		cout << "Пароль:";	getline(cin, password, '\n');
+	}
+	void setInf(ifstream *f)					
+	{
+		string buf;						
+		getline(*f, buf, '\n');
+		getline(*f, name, '\n');
+		getline(*f, section, '\n');
+		getline(*f, login, '\n');
+		getline(*f, password, '\n');
+	}
+
+	bool check(string const *l, string const *p)	
+        //проверка введеных имени, логина и пароля
+	{
+
+		if (*l != login)
+			return false;
+		else if (*p != password)
+			return false;
+		else
+			return true;		
+	}
+
+	void userAccount()		
+        // вывод информации по сотруднику.
+	{
+		system("cls");
+		cout << "---АВТОРИЗАЦИЯ ПРОШЛА УСПЕШНО---" << endl;
+		system("pause");
+
+		char choice = '0';
+		while (choice != '4')
+		{
+			system("cls");
+			cout << endl << " Что вы хотите сделать : " << endl;
+			cout << " " << endl
+				 << "1. Создать проект."			<< endl 
+				 << "2. Список проектов в работе."	<< endl 
+				 << "3. Удалить проект."			<< endl 
+				 << "4. Выйти из аккаунта."			<< endl
+				 << " " << endl;
+			cout << "Выберите действие: ";	cin >> choice;
+			string buf;			
+			getline(cin, buf);	
+			
+			switch (choice)
+			{
+			case '1':				
+                        // создание проекта
+				if (pr_len == 0)	
+                                // когда у сотрудника 0 проектов
+					firstProject();	
+				else
+					newProject();	
+                                        // когда у сотрдника уже есть проект/проекты
+				break;
+			case '2':				
+                        // вывод списка проектов
+				system("cls");
+				if (pr_len != 0)
+					for (int i = 0; i < pr_len; i++) project_list[i].getProjectList(&i);	
+				else														
+					cout << "---ПРОЕКТОВ НЕТ---" << endl;
+				system("pause");
+				break;
+			case '3':				
+                        // удаление проекта
+				int n_pr;			
+                                // номер проекта для удаления
+				if (pr_len)			
+				{
+					system("cls");			
+					cout << "Укажите номер проекта:"; cin >> n_pr;
+					if (pr_len < n_pr)
+					{
+						cout << "---ПРОЕКТА С УКАЗАННЫМ НОМЕР НЕ СУЩЕСТВУЕТ---" << endl;
+						system("pause");
+					}
+					else
+					{
+						removeProjectList(&n_pr);		
+                                                // удаления проекта по номеру 
+						pr_len--;
+						break;
+					}
+				}
+				else				
+                                //нет проектов
+				{
+					system("cls");
+					cout << "---ПРОЕКТОВ НЕТ---" << endl;
+					system("pause");
+				}
+				break;
+			}
+		}
+
+	}
+
+	void read_file(ifstream *f) 
+        // читение данных из файла 
+	{
+		*f >> pr_len;			
+		string buf;				
+		getline(*f, buf, '\n');	
+		if (pr_len)				
+		{
+			if (pr_len == 1)	
+				firstProject(f);
+			else
+				newProject(f);	
+		}
+	}
+
+};
+
+class EmployeeBase		
+// класс компании
+{
+private:
+	int len = 0;								
+	Employee *list_employee = new Employee[1];	
+        // список сотрудников 
+
+	void firstEmployee()						
+        // создание первого сотрудника
+	{
+		list_employee[0].setInf();
+		len++;									
+	}
+
+	void firstEmployee(ifstream *f)		
+	{
+		list_employee[0].setInf(f);
+	}
+	void newEmployee()					
+        // добавление сотрудника в базу, когда сотрудников > 1	
+	{
+		Employee t_employee;				
+		t_employee.setInf();				
+		Employee *temp_list;				
+		temp_list = new Employee[len + 1];	
+		for (int i = 0; i < len; i++) temp_list[i] = list_employee[i];	
+		temp_list[len] = t_employee;									
+		len++;
+		delete[] list_employee;				
+		list_employee = temp_list;			
+	}
+
+public:
+	EmployeeBase()		
+        // конструктор класса
+	{
+		ifstream file;
+		file.open("data.txt");
+		file >> len;
+
+		if (len)		
+						
+		{
+			list_employee = new Employee[len];	
+                        // количество существующий сотрудников
+			if (len == 1)
+			{
+				firstEmployee(&file);				
+				list_employee[0].read_file(&file);	
+			}
+			else									
+                        // если больше одного сотрудника
+			{
+				for (int i = 0; i < len; i++)
+				{
+					list_employee[i].setInf(&file);		// чтение информации о сотруднике
+					list_employee[i].read_file(&file);	// чтение файлов и данных проектов 
+				}
+			}
+		}
+		file.close();
+	}
+	void init()			
+	{
+		if (len == 0)	
+			firstEmployee();	
+                        // создания первого сотрудника
+		else
+			newEmployee();		
+                        // создания > 1 сотрудника
+	}
+
+
+	void enter()											
+        // вход в аккаунт сотрудника
+	{
+		string user_name, user_login, user_password;		
+		system("cls");
+		bool founded = false;							
+                // проверка нашелся сотрудник или нет 
+		cout << "---АВТОРИЗАЦИЯ---" << endl;
+		cout << "Введите имя сотрудника:";		getline(cin, user_name, '\n');
+		cout << "Введите логин сотрудника:";	getline(cin, user_login, '\n');
+		cout << "Введите пароль сотрудника:";	getline(cin, user_password, '\n');
+		int i = 0;
+		for (; i < len; i++)
+		{
+			if (list_employee[i].name == user_name)							
+                        // имя совпадает и такой сотрудник уже есть
+			{
+				if (list_employee[i].check(&user_login, &user_password))	
+				{
+					founded = true;										
+					list_employee[i].userAccount();		
+					break;
+				}
+				else				
+                                // если допущена ошибка при авторизации
+				{
+					system("cls");
+					cout << endl << "---ПРИ АВТОРИЗАЦИИ ДОПУЩЕНА ОШИБКА---" << endl;
+					system("pause");
+				}
+			}
+
+		}
+		if (founded == false)					
+		{
+			system("cls");
+			cout << endl << "---ПРИ АВТОРИЗАЦИИ ДОПУЩЕНА ОШИБКА---" << endl;
+			system("pause");
+		}
+	}
+
+	void write_to_file()					
+        // запиь данных в файл
+	{
+		ofstream file;
+		file.open("data.txt");
+
+		file << len << '\n';	
+                //количество сотрудников в компании
+		
+		for (int i = 0; i < len; i++)
+		{
+			file << list_employee[i].name << '\n';				
+			file << list_employee[i].section << '\n';		
+			file << list_employee[i].login << '\n';				
+			file << list_employee[i].password << '\n';			
+			file << list_employee[i].pr_len << '\n';			
+			for (int j = 0; j < list_employee[i].pr_len; j++)	
+			{
+				file << list_employee[i].project_list[j].project_name << '\n';			
+                                // вывод имени проекта
+				file << list_employee[i].project_list[j].project_description << '\n';	
+                                // вывод описания проекта
+			}
+		}
+		file.close();
+	}
+};
+
+
+
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+
+	char choice = '0';
+	EmployeeBase Company;				
+        // создание объекта компания. 
+										
+	string a;							
+
+	while (choice != '3')				
+        // меню
+	{
+		system("cls");
+		cout << endl << "Выберите, что вы хотите сделать : " << endl;
+		cout << " " << endl
+			 << "1. Создать сотрудника."	<< endl
+			 << "2. Войти как сотрудник."	<< endl
+			 << "3. Выйти из программы."	<< endl
+			 << " ";
+		cout << endl << "Ваш выбор:";	cin >> choice;
+		getline(cin, a, '\n');
+
+		switch (choice)
+		{
+		case '1':
+			Company.init();						
+                
+			break;
+		case '2':
+			Company.enter();					
+		}
+	}
+
+	Company.write_to_file();					
+}
+
